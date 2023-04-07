@@ -50,6 +50,21 @@ tape('get grades for student 1', async (t) => {
   }
 })
 
+tape('get course grade report', async (t) => {
+  const url = `${endpoint}/course/all/grades`
+  try {
+    const { data, response } = await jsonist.get(url)
+    if (response.statusCode !== 200) {
+      throw new Error(response.statusMessage)
+    }
+    t.ok(data.hasOwnProperty('highest'), 'should return an object with grade statistics')
+  } catch(e) {
+    t.error(e)
+  } finally {
+    t.end()
+  }
+})
+
 tape('cleanup', function (t) {
   server.closeDB()
   server.close()
