@@ -1,8 +1,8 @@
 const jsonist = require('jsonist')
 const knex = require('./db')
-const { NotFoundException, RequestException } = require('./lib/exceptions')
-const { asyncFilter, sendHttpRequest, asyncGradeStat } = require('./lib/utils')
-const gradesUrl = 'https://outlier-coding-test-data.onrender.com/grades.json'
+const { NotFoundException } = require('./lib/exceptions')
+const { asyncFilter } = require('./lib/utils')
+const { getGrades, getCourseGradeStat } = require('./models/grade')
 
 module.exports = {
   getHealth,
@@ -44,9 +44,7 @@ async function getStudentGradesReport (req, res, next) {
       throw new NotFoundException(`student ${studentId} not found`);
     }
 
-    const data = await sendHttpRequest({
-      url: gradesUrl
-    })
+    const data = await getGrades();
 
     res.json({
       ...student,
@@ -59,12 +57,7 @@ async function getStudentGradesReport (req, res, next) {
 
 async function getCourseGradesReport (req, res, next) {
   try {
-    const data = await sendHttpRequest({
-      url: gradesUrl
-    })
-    
-    let stat = await asyncGradeStat(data)
-
+    const stat = await getCourseGradeStat();
     res.json(stat);
   }catch(e){
     next(e)
