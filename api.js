@@ -1,6 +1,7 @@
 const jsonist = require('jsonist')
 const knex = require('./db')
 const { NotFoundException, RequestException } = require('./lib/exceptions')
+const { asyncFilter, sendHttpRequest, asyncGradeStat } = require('./lib/utils')
 const gradesUrl = 'https://outlier-coding-test-data.onrender.com/grades.json'
 
 module.exports = {
@@ -42,14 +43,14 @@ async function getStudentGradesReport (req, res, next) {
     if(!student) {
       throw new NotFoundException(`student ${studentId} not found`);
     }
-    const { data, response } = await jsonist.get(gradesUrl)
-    if(response.statusCode !== 200) {
-      throw new RequestException(response.statusCode, res.statusMessage)
-    }
+
+    const data = await sendHttpRequest({
+      url: gradesUrl
+    })
 
     res.json({
       ...student,
-      grades: data.filter(grade => grade.id == studentId)
+      grades: await asyncFilter(data, grade => grade.id == studentId)
     })
   }catch(e){
     next(e)
@@ -58,29 +59,11 @@ async function getStudentGradesReport (req, res, next) {
 
 async function getCourseGradesReport (req, res, next) {
   try {
-    const { data, response } = await jsonist.get(gradesUrl)
-    if(response.statusCode !== 200) {
-      throw new RequestException(response.statusCode, res.statusMessage)
-    }
-    const stat = {
-      highest: Number.MIN_VALUE,
-      lowest: Number.MAX_VALUE,
-      avarage: 0
-    };
-    if(!data.length) {
-      stat.highest = 0;
-      stat.lowest = 0;
-      return res.json(stat)
-    }
-    
-    let totalGrade = 0
-
-    data.forEach(score => {
-      stat.highest = Math.max(stat.highest, score.grade)
-      stat.lowest = Math.min(stat.lowest, score.grade)
-      totalGrade += stat.grade;
+    const data = await sendHttpRequest({
+      url: gradesUrl
     })
-    stat.avarage = (totalGrade/data.length).toFixed(2)
+    
+    let stat = await asyncGradeStat(data)
 
     res.json(stat);
   }catch(e){
