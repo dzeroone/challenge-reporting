@@ -35,6 +35,21 @@ tape('get_student_by_id', async (t) => {
   }
 })
 
+tape('get grades for student 1', async (t) => {
+  const url = `${endpoint}/student/1/grades`
+  try {
+    const { data, response } = await jsonist.get(url)
+    if (response.statusCode !== 200) {
+      throw new Error(response.statusMessage)
+    }
+    t.ok(Array.isArray(data.grades), 'should return an array of student grades')
+  } catch(e) {
+    t.error(e)
+  } finally {
+    t.end()
+  }
+})
+
 tape('cleanup', function (t) {
   server.closeDB()
   server.close()
