@@ -1,4 +1,5 @@
 const knex = require('./db')
+const { NotFoundException } = require('./lib/exceptions')
 
 module.exports = {
   getHealth,
@@ -18,7 +19,17 @@ async function getHealth (req, res, next) {
 }
 
 async function getStudent (req, res, next) {
-  throw new Error('This method has not been implemented yet.')
+  const studentId = req.params.id;
+  try {
+    const student = await knex('students').where('id', studentId).first();
+    if(!student) {
+      throw new NotFoundException(`student ${studentId} not found`);
+    }
+    // console.log('sss', student)
+    return res.json(student)
+  }catch(e) {
+    next(e)
+  }
 }
 
 async function getStudentGradesReport (req, res, next) {
