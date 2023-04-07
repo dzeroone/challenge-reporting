@@ -57,5 +57,33 @@ async function getStudentGradesReport (req, res, next) {
 }
 
 async function getCourseGradesReport (req, res, next) {
-  throw new Error('This method has not been implemented yet.')
+  try {
+    const { data, response } = await jsonist.get(gradesUrl)
+    if(response.statusCode !== 200) {
+      throw new RequestException(response.statusCode, res.statusMessage)
+    }
+    const stat = {
+      highest: Number.MIN_VALUE,
+      lowest: Number.MAX_VALUE,
+      avarage: 0
+    };
+    if(!data.length) {
+      stat.highest = 0;
+      stat.lowest = 0;
+      return res.json(stat)
+    }
+    
+    let totalGrade = 0
+
+    data.forEach(score => {
+      stat.highest = Math.max(stat.highest, score.grade)
+      stat.lowest = Math.min(stat.lowest, score.grade)
+      totalGrade += stat.grade;
+    })
+    stat.avarage = (totalGrade/data.length).toFixed(2)
+
+    res.json(stat);
+  }catch(e){
+    next(e)
+  }
 }
