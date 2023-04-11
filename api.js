@@ -2,6 +2,7 @@ const jsonist = require('jsonist')
 const knex = require('./db')
 const { NotFoundException } = require('./lib/exceptions')
 const { getGrades, getCourseGradeStat } = require('./models/grade')
+const { getStudentById, getStudentGradesById } = require('./models/student')
 
 module.exports = {
   getHealth,
@@ -23,7 +24,7 @@ async function getHealth (req, res, next) {
 async function getStudent (req, res, next) {
   const studentId = req.params.id;
   try {
-    const student = await knex('students').where('id', studentId).first();
+    const student = await getStudentById(studentId);
     if(!student) {
       throw new NotFoundException(`student ${studentId} not found`);
     }
@@ -37,16 +38,14 @@ async function getStudent (req, res, next) {
 async function getStudentGradesReport (req, res, next) {
   try {
     const studentId = req.params.id;
-    const student = await knex('students').where('id', studentId).limit(1).first();
+    const student = await getStudentById(studentId);
     if(!student) {
       throw new NotFoundException(`student ${studentId} not found`);
     }
 
-    const data = await getGrades();
-
     res.json({
       ...student,
-      grades: data.filter(grade => grade.id == studentId)
+      grades: await getStudentGradesById(studentId)
     })
   }catch(e){
     next(e)
