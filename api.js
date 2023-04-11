@@ -38,14 +38,14 @@ async function getStudent (req, res, next) {
 async function getStudentGradesReport (req, res, next) {
   try {
     const studentId = req.params.id;
-    const student = await getStudentById(studentId);
+    const [student, grades] = await Promise.all([getStudentById(studentId), getStudentGradesById(studentId)]);
     if(!student) {
       throw new NotFoundException(`student ${studentId} not found`);
     }
 
     res.json({
       ...student,
-      grades: await getStudentGradesById(studentId)
+      grades
     })
   }catch(e){
     next(e)
