@@ -32,7 +32,7 @@ async function getCourseGradeStat () {
     stat.highest = Math.max(stat.highest, score.grade)
     stat.lowest = Math.min(stat.lowest, score.grade)
   })
-  stat.avarage = (sum/data.length).toFixed(2)
+  stat.avarage = +(sum/data.length).toFixed(2)
   
   statCache = stat;
 
