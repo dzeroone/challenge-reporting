@@ -2,7 +2,7 @@ const knex = require("../db");
 const { getGrades } = require("./grade");
 
 const studentCache = {};
-const studentGrageCache = {};
+const studentGradeCache = {};
 
 module.exports = {
   getStudentById,
@@ -16,8 +16,8 @@ async function getStudentById(id) {
 }
 
 async function getStudentGradesById(id) {
-  if(studentGrageCache[id]) return studentGrageCache[id];
+  if(studentGradeCache[id]) return studentGradeCache[id];
   const data = await getGrades()
-  studentGrageCache[id] = data.filter(grade => grade.id == id)
-  return studentGrageCache[id];
+  studentGradeCache[id] = data.filter(grade => grade.id == id)
+  return studentGradeCache[id];
 }
